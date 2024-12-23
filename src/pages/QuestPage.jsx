@@ -1,3 +1,6 @@
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css"; // Import Quill's CSS for styling
+
 import { useState, useEffect } from "react";
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -15,6 +18,7 @@ function QuestPage() {
   const [targetQuest, setTargetQuest] = useState([]);
   const [content, setContent] = useState([]);
   const [targetSpace, setTargetSpace] = useState(null);
+  const [editSection, setEditSection] = useState(false);
 
   useEffect(() => {
     const findContent = () => {
@@ -35,7 +39,11 @@ function QuestPage() {
 
           // Set content if tableOfContent exists
           if (quest.tableOfContent) {
+            console.log("content", quest.tableOfContent);
             setContent(quest.tableOfContent);
+            if (quest.tableOfContent.length > 0) {
+              setSections(quest.tableOfContent);
+            }
           }
         }
       }
@@ -50,6 +58,9 @@ function QuestPage() {
       { id: Date.now(), overview: "", index: "", description: "" },
     ]);
   };
+  const editTheSection = () => {
+    setEditSection(true);
+  };
 
   const removeSection = (id) => {
     setSections((prevSections) =>
@@ -57,12 +68,9 @@ function QuestPage() {
     );
   };
 
-  const handleEditContent = () => {
-    setIsEditing(true);
-  };
-
   const handleBack = () => {
     setIsEditing(false);
+    setValueSetting(false);
   };
 
   const handleInputChange = (id, field, value) => {
@@ -233,65 +241,135 @@ function QuestPage() {
             <Card className="p-6 space-y-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">LearnHattan</h2>
-                <Button onClick={() => window.history.back()}>Back</Button>{" "}
-                {/* Example back button */}
+                <Button onClick={() => handleBack()}>Back</Button>
               </div>
               <Card className="p-4 space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-bold">Table Of Content</h3>
-                  <Button onClick={addSection}>Add</Button>
+                  <div className="flex gap-3">
+                    <Button onClick={addSection}>Add</Button>
+                    <Button onClick={editTheSection}>Edit</Button>
+                  </div>
                 </div>
                 <div className="space-y-4">
-                  {sections.map((section) => (
-                    <div
-                      key={section.id}
-                      className="p-4 border rounded hover:bg-gray-100 relative"
-                    >
-                      <Button
-                        className="absolute top-0 right-0 mt-2 mr-2 text-sm"
-                        variant="link"
-                        onClick={() => removeSection(section.id)}
-                      >
-                        Remove this section
-                      </Button>
-                      <div className="flex items-center gap-4">
-                        <Input
-                          placeholder="Overview"
-                          value={section.overview}
-                          onChange={(e) =>
-                            handleInputChange(
-                              section.id,
-                              "overview",
-                              e.target.value
-                            )
-                          }
-                        />
-                        <Input
-                          placeholder="Index No."
-                          value={section.index}
-                          onChange={(e) =>
-                            handleInputChange(
-                              section.id,
-                              "index",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                      <Textarea
-                        placeholder="Description"
-                        className="resize-none mt-2"
-                        value={section.description}
-                        onChange={(e) =>
-                          handleInputChange(
-                            section.id,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </div>
-                  ))}
+                  {content.length > 0 ? (
+                    <>
+                      {content.map((content) => (
+                        <>
+                          <div
+                            key={content.id}
+                            className="p-4 border rounded hover:bg-gray-100 relative"
+                          >
+                            <Button
+                              className="absolute top-0 right-0 mt-2 mr-2 text-sm"
+                              variant="link"
+                              onClick={() => removeSection(content.id)}
+                            >
+                              Remove
+                            </Button>
+                            <div className="flex mb-4 items-center gap-4">
+                              <Input
+                                placeholder="Overview"
+                                value={content.overview}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    content.id,
+                                    "overview",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                              <Input
+                                placeholder="Index No."
+                                value={content.index}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    content.id,
+                                    "index",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </div>
+                            {editSection ? (
+                              <>
+                                <ReactQuill
+                                  value={content.description}
+                                  className="resize-none"
+                                />
+                              </>
+                            ) : (
+                              <Textarea
+                                placeholder="Description"
+                                className="resize-none mt-2"
+                                value={content.description}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    content.id,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            )}
+                          </div>
+                        </>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {sections.map((section) => (
+                        <div
+                          key={section.id}
+                          className="p-4 border rounded hover:bg-gray-100 relative"
+                        >
+                          <Button
+                            className="absolute top-0 right-0 mt-2 mr-2 text-sm"
+                            variant="link"
+                            onClick={() => removeSection(section.id)}
+                          >
+                            Remove
+                          </Button>
+                          <div className="flex items-center gap-4">
+                            <Input
+                              placeholder="Overview"
+                              value={section.overview}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  section.id,
+                                  "overview",
+                                  e.target.value
+                                )
+                              }
+                            />
+                            <Input
+                              placeholder="Index No."
+                              value={section.index}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  section.id,
+                                  "index",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </div>
+                          <Textarea
+                            placeholder="Description"
+                            className="resize-none mt-2"
+                            value={section.description}
+                            onChange={(e) =>
+                              handleInputChange(
+                                section.id,
+                                "description",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
                 <Button className="w-full" onClick={handleSave}>
                   Save
@@ -303,7 +381,10 @@ function QuestPage() {
       ) : (
         <>
           <Card className="p-6 space-y-6">
-            <h3 className="text-xl font-bold mb-4">Quest Values</h3>
+            <div className="flex justify-between">
+              <h3 className="text-xl font-bold mb-4">Quest Values</h3>
+              <Button onClick={() => handleBack()}>Back</Button>{" "}
+            </div>
 
             {/* XP Field */}
             <div className="flex items-center justify-between">
