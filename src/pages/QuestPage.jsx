@@ -5,7 +5,6 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { useSpaceContext } from "../context/SpaceContext";
 import { useParams, Link } from "react-router-dom";
-let targetSpace;
 function QuestPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [valueSetting, setValueSetting] = useState(false);
@@ -15,28 +14,35 @@ function QuestPage() {
   const { questId } = useParams();
   const [targetQuest, setTargetQuest] = useState([]);
   const [content, setContent] = useState([]);
+  const [targetSpace, setTargetSpace] = useState(null);
 
   useEffect(() => {
     const findContent = () => {
-      for (let i = 0; i < spaces.length; i++) {
-        if (spaces[i]._id === spaceId) {
-          targetSpace = spaces[i];
-          for (let j = 0; j < spaces[i].context.quests.length; j++) {
-            if (spaces[i].context.quests[j].questId === questId) {
-              const x = spaces[i].context.quests[j];
-              setTargetQuest(x);
-              if (x && x.tableOfContent) {
-                setContent(x.tableOfContent);
-              }
-              return;
-            }
+      // Find the space by ID
+      const targetSpaceX = spaces.find((space) => space._id === spaceId);
+      console.log("target space is ", targetSpaceX);
+      setTargetSpace(targetSpaceX);
+
+      // Find the quest by questId
+      if (targetSpace) {
+        console.log("entered");
+        const quest = targetSpace.context.quests.find(
+          (q) => q.questId.toString() === questId
+        );
+        if (quest) {
+          console.log("found quest", quest);
+          setTargetQuest(quest);
+
+          // Set content if tableOfContent exists
+          if (quest.tableOfContent) {
+            setContent(quest.tableOfContent);
           }
         }
       }
     };
 
     findContent();
-  }, [spaces, questId, spaceId]);
+  });
 
   const addSection = () => {
     setSections((prevSections) => [
@@ -159,19 +165,19 @@ function QuestPage() {
                   <div className="flex flex-col items-center">
                     <span className="font-medium">Rewards:</span>
                     <span className="text-gray-500">
-                      {targetQuest ? targetQuest.reward : "---"}
+                      {targetQuest.reward || "---"}
                     </span>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="font-medium">Winning Slots:</span>
                     <span className="text-gray-500">
-                      {targetQuest ? targetQuest.value?.Exp : "---"}
+                      {targetQuest.value?.WinningSlts || "---"}
                     </span>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="font-medium">Experience:</span>
                     <span className="text-gray-500">
-                      {targetQuest ? targetQuest.value?.WinningSlts : "---"}
+                      {targetQuest.value?.Exp || "---"}
                     </span>
                   </div>
                 </div>
@@ -318,7 +324,7 @@ function QuestPage() {
               <label className="text-lg font-medium">Quest Pool</label>
               <Input
                 value={
-                  targetSpace ? targetSpace.context.totalRewardPool : "1000x"
+                  targetSpace ? targetSpace.context.totalRewardPool : "1000x--"
                 }
                 readOnly
                 className="w-2/3"
@@ -330,7 +336,7 @@ function QuestPage() {
             <div className="flex items-center justify-between">
               <label className="text-lg font-medium">Reward</label>
               <Input
-                value={targetQuest ? targetQuest.reward : ""}
+                value={targetQuest ? targetQuest.reward : "--"}
                 readOnly
                 className="w-2/3"
               />
